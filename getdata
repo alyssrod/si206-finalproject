@@ -1,0 +1,60 @@
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+import songlink
+from openwhyd_api_wrapper import OpenwhydAPI
+
+# Spotify API 
+spotify_client_id = 'YOUR_SPOTIFY_CLIENT_ID'
+spotify_client_secret = 'YOUR_SPOTIFY_CLIENT_SECRET'
+spotify_client_credentials_manager = SpotifyClientCredentials(client_id=spotify_client_id, client_secret=spotify_client_secret)
+sp = spotipy.Spotify(client_credentials_manager=spotify_client_credentials_manager)
+
+# Songlink API key
+songlink_key = 'YOUR_SONGLINK_API_KEY'
+sl = songlink.Client(api_key=songlink_key)
+
+# Openwhyd API 
+openwhyd_api_key = 'YOUR_OPENWHYD_API_KEY'
+ow = OpenwhydAPI(api_key=openwhyd_api_key)
+
+# Get streams for a song using Spotify API
+def get_streams(song_uri):
+    track_info = sp.track(song_uri)
+    streams = track_info['popularity']
+    return streams
+
+# Get Songlink for a Spotify song
+def get_songlink(song_url):
+    sl_response = sl.from_url(song_url)
+    return sl_response.url if sl_response else None
+
+# Get playlists containing a song using Openwhyd API
+def get_openwhyd_playlists(song_id):
+    playlists = ow.get_playlists_containing_track(song_id)
+    return playlists
+
+# Part 2 - Store data in a SQLite database
+# ... (code to create SQLite tables and database)
+
+#  Store Spotify data in SQLite database
+def store_spotify_data(song_uri):
+    streams = get_streams(song_uri)
+    # ... (code to store data in SQLite)
+
+# Store Songlink data in SQLite database
+def store_songlink_data(song_url):
+    songlink_url = get_songlink(song_url)
+    # ... (code to store data in SQLite)
+
+# Store Openwhyd data in SQLite database
+def store_openwhyd_data(song_id):
+    playlists = get_openwhyd_playlists(song_id)
+    # ... (code to store data in SQLite)
+
+# Main loop to gather data and store in SQLite database
+for song_uri in list_of_songs:
+    store_spotify_data(song_uri)
+    song_url = sp.track(song_uri)['external_urls']['spotify']
+    store_songlink_data(song_url)
+    song_id = sp.track(song_uri)['id']
+    store_openwhyd_data(song_id)
