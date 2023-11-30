@@ -60,4 +60,13 @@ def get_openwhyd_data(playlist_url):
     '''
     Use beautiful soup to scrape the OpenWhyd playlists
     '''
-    pass
+
+    api_url = f'https://openwhyd.org/hot'
+    response = requests.get(api_url)
+    if response.status_code == 200:
+        playlist_data = response.json()
+        playlist_data = response.json 
+        print(playlist_data)
+    else:
+        print(f"Error: {response.status_code}")
+        print(response.text)
