@@ -2,16 +2,51 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
 import requests
+import base64
 from bs4 import BeautifulSoup 
+
+client_id = '4c16a651c8e94c769cdf11ad1bb033a5'
+client_secret = '2b5a3c867ff842b89a166674025eb7cc'
+
+# Encode client_id and client_secret to base64
+credentials = base64.b64encode(f"{client_id}:{client_secret}".encode('utf-8')).decode('utf-8')
+
+# Set up authentication options
+auth_options = {
+    'url': 'https://accounts.spotify.com/api/token',
+    'headers': {
+        'Authorization': 'Basic ' + credentials
+    },
+    'form': {
+        'grant_type': 'client_credentials'
+    },
+    'json': True
+}
+
+# Make a POST request to obtain the access token
+response = requests.post(auth_options['url'], headers=auth_options['headers'], data=auth_options['form'])
+
+if response.status_code == 200:
+    token = response.json().get('access_token')
+    print(f"Access Token: {token}")
+else:
+    print(f"Error: {response.status_code}")
+    print(response.text)
+
+
 
 def get_spotify_data(api_key): 
     '''
     Make requests to the Spotify API using the provided API key   
     Implement logic to get data about songs, artists, and streams
-    pass'''
-    client_credentials_manager = SpotifyClientCredentials(client_id=api_key[0], client_secret=api_key[1])
-    sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-    return sp
+    pass
+    api key BQDT-37dX87GPU5ABzfZjDLt5OF3YQa8sMpY3U5qu5wFAMkiIQ-BrX5Iz-K5xCNFvsRKx835kHsF-thd3Ypo47J-B26EonxLGMZLjhP-xg87_hcRUvA
+    '''
+    endpoint = 'https://api.spotify.com/v1/search'
+    headers = {'Authorization': 'Bearer ' + 'BQDsxqN9FMQ8NtvJQtpCu_MyNlhoJOm3ijqJX1X5QQRA-YILkPeOL-T3YqOiygdYUz55jbw-gEbjK5DpbM0L5ceY6fcIPlYo9upyHjhYiGbtRqXQUsU'}
+    response = requests.get(endpoint, headers=headers)
+    data = response.json()
+    return data 
 
 def get_songlink_data(song_title): 
     '''

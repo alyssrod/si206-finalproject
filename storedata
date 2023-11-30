@@ -3,19 +3,52 @@ import sqlite3
 def create_database(): 
     #conn = sqlite3.connect('storedata.db') 
     #c = conn.cursor() 
-    #c.execute('''CREATE TABLE IF NOT EXISTS storedata 
+    #c.execute('''CREATE TABLE IF NOT EXISTS spotify_data 
      #           (id INTEGER PRIMARY KEY AUTOINCREMENT, 
      #           song_name TEXT, 
      #           num_streams INTEGER, 
       #          artist_name TEXT,)''') 
-    #conn.commit() 
+   
+
+    #cursor.execute("""
+       # CREATE TABLE IF NOT EXISTS songlink_data (
+       #     id INTEGER PRIMARY KEY,
+       #     song_title TEXT,
+       #     platforms TEXT
+      #  )
+   # """)
+
+    #cursor.execute("""
+     #   CREATE TABLE IF NOT EXISTS openwhyd_data (
+      #      id INTEGER PRIMARY KEY,
+      #      playlist_name TEXT,
+      #      song_count INTEGER
+      #  )
+    #""")
+    
+   # conn.commit()
     #conn.close()
+
     pass 
 
 def store_spotify_data(data): 
     '''
     Store the data retrieved from the Spotify API in the database
     '''
+
+    #conn = sqlite3.connect("your_database_name.db")
+    #cursor = conn.cursor()
+    
+    #for item in data["items"]:
+     #   artist = item["artist"]
+      #  song = item["name"]
+      #  streams = item["streams"]
+        
+      #  cursor.execute("INSERT INTO spotify_data (artist, song, streams) VALUES (?, ?, ?)",
+       #                (artist, song, streams))
+    
+    #conn.commit()
+    #conn.close()
     pass
 
 def store_songlink_data(data): 
