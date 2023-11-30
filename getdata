@@ -2,6 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
 import requests
+import json
 import base64
 from bs4 import BeautifulSoup 
 
@@ -48,6 +49,20 @@ def get_spotify_data(api_key):
     data = response.json()
     return data 
 
+def store_spotify_data(data): 
+    try: 
+        filename = open('spotify_data.json', 'r')
+        file_read = json.loads(filename)
+        filename.close()
+        filename = open('spotify_data.json', 'w')
+        for x in data: 
+            filename.write(json.dumps(data))
+    except: 
+        filename = open('spotify_data.json', 'w')
+        filename.write(json.dumps(data))
+
+
+
 def get_songlink_data(song_title): 
     '''
     Make requests to the SongLink API using the provided API key   
@@ -70,3 +85,17 @@ def get_openwhyd_data(playlist_url):
     else:
         print(f"Error: {response.status_code}")
         print(response.text)
+
+
+def store_openwhyd_data(data, filename):
+    '''
+    Store the data retrieved from the OpenWhyd API in the database
+    '''
+    filename = 'openwhyd_data.json'
+    data = get_openwhyd_data()
+    with open(filename, 'w') as f:
+        json.dump(data, f)
+    print(f'Data successfully written to {filename}')
+
+
+get_openwhyd_data("https://openwhyd.org/hot/electro") 

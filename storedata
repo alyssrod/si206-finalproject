@@ -1,4 +1,10 @@
 import sqlite3 
+import json
+import sys
+import getdata
+print(sys.path)
+from getdata import get_spotify_data, get_songlink_data, get_openwhyd_data
+
 
 def create_database(): 
     #conn = sqlite3.connect('storedata.db') 
@@ -57,11 +63,14 @@ def store_songlink_data(data):
     '''
     pass
 
-def store_openwhyd_data(data):
+def store_openwhyd_data(data, filename):
     '''
     Store the data retrieved from the OpenWhyd API in the database
     '''
-    pass
+    filename = 'openwhyd_data.json'
+    data = get_openwhyd_data()
+    with open(filename, 'w') as f:
+        json.dump(data, f)
 
 def calculate_correlation():
     '''
