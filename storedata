@@ -1,0 +1,8 @@
+import sqlite3 
+def create_database(): 
+'''
+Create SQLite database and necessary tables
+'''
+  pass
+
+def 
