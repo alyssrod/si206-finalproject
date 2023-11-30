@@ -1,8 +1,37 @@
 import sqlite3 
-def create_database(): 
-'''
-Create SQLite database and necessary tables
-'''
-  pass
 
-def 
+def create_database(): 
+    #conn = sqlite3.connect('storedata.db') 
+    #c = conn.cursor() 
+    #c.execute('''CREATE TABLE IF NOT EXISTS storedata 
+     #           (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+     #           song_name TEXT, 
+     #           num_streams INTEGER, 
+      #          artist_name TEXT,)''') 
+    #conn.commit() 
+    #conn.close()
+    pass 
+
+def store_spotify_data(data): 
+    '''
+    Store the data retrieved from the Spotify API in the database
+    '''
+    pass
+
+def store_songlink_data(data): 
+    '''
+    Store the data retrieved from the SongLink API in the database
+    '''
+    pass
+
+def store_openwhyd_data(data):
+    '''
+    Store the data retrieved from the OpenWhyd API in the database
+    '''
+    pass
+
+def calculate_correlation():
+    '''
+    Calculate the correlation between the number of streams and the number of likes
+    '''
+    pass
