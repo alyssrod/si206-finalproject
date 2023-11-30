@@ -1,1 +1,19 @@
+from getdata import get_spotify_data, get_songlink_data, get_openwhyd_data 
+from storedata import store_spotify_data, store_songlink_data, store_openwhyd_data, create_database, calculate_correlation
 
+spotify_api_key = ('', '') # insert your spotify api key here
+songlinker_api_key = '' # insert your songlinker api key here
+playlist_url = '' # insert your openwhyd playlist url here
+
+spotify_data = get_spotify_data(spotify_api_key)
+songlink_data = get_songlink_data("song_title")
+openwhyd_data = get_openwhyd_data(playlist_url)
+
+
+create_database 
+
+store_spotify_data(spotify_data)
+store_songlink_data(songlink_data)  
+store_openwhyd_data(openwhyd_data)
+
+calculate_correlation() 
