@@ -7,19 +7,11 @@ import json
 import base64
 from bs4 import BeautifulSoup 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 68ff7815332b622ad5f604dec2fd78f2e99f680c
 client_id = '4c16a651c8e94c769cdf11ad1bb033a5'
 client_secret = '2b5a3c867ff842b89a166674025eb7cc'
 client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager) #spotify object to access API
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 68ff7815332b622ad5f604dec2fd78f2e99f680c
 def setUpDatabase(db_name):
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
@@ -27,12 +19,6 @@ def setUpDatabase(db_name):
     return cur, conn
 
 cur, conn = setUpDatabase('final-database.db')
-<<<<<<< HEAD
-# Encode client_id and client_secret to base64
-credentials = base64.b64encode(f"{client_id}:{client_secret}".encode('utf-8')).decode('utf-8')
-
-# Set up authentication options
-=======
 
 def get_spotify_data(api_key): 
     '''
@@ -61,7 +47,6 @@ def store_spotify_data(data):
         print(f"Error storing Spotify data: {str(e)}")
 
 credentials = base64.b64encode(f"{client_id}:{client_secret}".encode('utf-8')).decode('utf-8')
->>>>>>> 68ff7815332b622ad5f604dec2fd78f2e99f680c
 auth_options = {
     'url': 'https://accounts.spotify.com/api/token',
     'headers': {
@@ -72,110 +57,16 @@ auth_options = {
     },
     'json': True
 }
-<<<<<<< HEAD
-
-# Make a POST request to obtain the access token
-response = requests.post(auth_options['url'], headers=auth_options['headers'], data=auth_options['form'])
-
-if response.status_code == 200:
-    token = response.json().get('access_token')
-    print(f"Access Token: {token}")
-=======
 response = requests.post(auth_options['url'], headers=auth_options['headers'], data=auth_options['form'])
 if response.status_code == 200:
     token = response.json().get('access_token')
     spotify_data = get_spotify_data(token)
     store_spotify_data(spotify_data)
->>>>>>> 68ff7815332b622ad5f604dec2fd78f2e99f680c
 else:
     print(f"Error: {response.status_code}")
     print(response.text)
 
 
-<<<<<<< HEAD
-
-def get_spotify_data(api_key): 
-    '''
-    Make requests to the Spotify API using the provided API key   
-    Implement logic to get data about songs, artists, and streams
-    pass
-    api key BQDT-37dX87GPU5ABzfZjDLt5OF3YQa8sMpY3U5qu5wFAMkiIQ-BrX5Iz-K5xCNFvsRKx835kHsF-thd3Ypo47J-B26EonxLGMZLjhP-xg87_hcRUvA
-    '''
-    endpoint = 'https://api.spotify.com/v1/search'
-    headers = {'Authorization': 'Bearer ' + 'BQDsxqN9FMQ8NtvJQtpCu_MyNlhoJOm3ijqJX1X5QQRA-YILkPeOL-T3YqOiygdYUz55jbw-gEbjK5DpbM0L5ceY6fcIPlYo9upyHjhYiGbtRqXQUsU'}
-    response = requests.get(endpoint, headers=headers)
-    data = response.json()
-    return data 
-
-def store_spotify_data(data): 
-    try: 
-        filename = open('spotify_data.json', 'r')
-        file_read = json.loads(filename)
-        filename.close()
-        filename = open('spotify_data.json', 'w')
-        for x in data: 
-            filename.write(json.dumps(data))
-    except: 
-        filename = open('spotify_data.json', 'w')
-        filename.write(json.dumps(data))
-
-
-
-def get_songlink_data(song_url, title): 
-    
-    info_dict={}
-    #creates link to search on songlink (uses a link to song)
-    base="https://api.song.link/v1-alpha.1/links?url="
-    link=song_url
-    full_link=base+link
-
-    #gets what platfroms a song appears on
-    response=requests.get(full_link)
-    data=response.text
-    data=json.loads(data)
-    links=data["linksByPlatform"] 
-    platforms=list(links.keys())
-    info_dict[title]=(platforms,len(platforms))
-    return(info_dict)
-
-def store_songlink_data(link, title):
-    file_name="songlink_data.json"
-    info=get_songlink_data(link, title)
-    info=json.dumps(info)
-    with open(file_name, "w") as f:
-        f.write(info)
-    return None
-
-
-def get_openwhyd_data(playlist_url):
-    '''
-    Use beautiful soup to scrape the OpenWhyd playlists
-    '''
-
-    api_url = f'https://openwhyd.org/hot'
-    response = requests.get(api_url)
-    if response.status_code == 200:
-        playlist_data = response.json()
-        playlist_data = response.json 
-        print(playlist_data)
-    else:
-        print(f"Error: {response.status_code}")
-        print(response.text)
-
-
-def store_openwhyd_data(data, filename):
-    '''
-    Store the data retrieved from the OpenWhyd API in the database
-    '''
-    filename = 'openwhyd_data.json'
-    data = get_openwhyd_data()
-    with open(filename, 'w') as f:
-        json.dump(data, f)
-    print(f'Data successfully written to {filename}')
-
-
-get_openwhyd_data("https://openwhyd.org/hot/electro") 
-=======
 def get_openwhyd_data(api_url):
     '''
     Make requests to the OpenWhyd API and retrieve data
@@ -206,4 +97,29 @@ try:
     store_openwhyd_data(openwhyd_data, cur, conn)
 except Exception as e:
     print(f"Error: {str(e)}")
->>>>>>> 68ff7815332b622ad5f604dec2fd78f2e99f680c
+
+def get_songlink_data(song_url, title):
+
+    info_dict={}
+
+    #creates link to search on songlink (uses a link to song)
+    base="https://api.song.link/v1-alpha.1/links?url="
+    link=song_url
+    full_link=base+link
+
+    #gets what platfroms a song appears on
+    response=requests.get(full_link)
+    data=response.text
+    data=json.loads(data)
+    links=data["linksByPlatform"] 
+    platforms=list(links.keys())
+    info_dict[title]=(platforms,len(platforms))
+    return(info_dict)
+
+def store_songlink_data(link, title):
+    file_name="songlink_data.json"
+    info=get_songlink_data(link, title)
+    info=json.dumps(info)
+    with open(file_name, "w") as f:
+        f.write(info)
+    return None
