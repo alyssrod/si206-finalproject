@@ -103,3 +103,29 @@ def store_spotify_data(data, cur, conn):
         print("Spotify data stored in the database successfully!")
     except Exception as e: 
         print(f"Error storing Spotify data: {str(e)}")
+
+
+def get_songlink_data(song_url, title): 
+
+    info_dict={}
+    #creates link to search on songlink (uses a link to song)
+    base="https://api.song.link/v1-alpha.1/links?url="
+    link=song_url
+    full_link=base+link
+
+    #gets what platfroms a song appears on
+    response=requests.get(full_link)
+    data=response.text
+    data=json.loads(data)
+    links=data["linksByPlatform"] 
+    platforms=list(links.keys())
+    info_dict[title]=(platforms,len(platforms))
+    return(info_dict)
+
+def store_songlink_data(link, title):
+    file_name="songlink_data.json"
+    info=get_songlink_data(link, title)
+    info=json.dumps(info)
+    with open(file_name, "w") as f:
+        f.write(info)
+    return None
