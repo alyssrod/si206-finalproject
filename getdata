@@ -30,6 +30,7 @@ def get_spotify_data(api_key):
     headers = {'Authorization': 'Bearer ' + api_key}
     response = requests.get(endpoint, headers=headers)
     data = response.json()
+    print(data)
     return data 
 
 def store_spotify_data(data): 
@@ -46,7 +47,6 @@ def store_spotify_data(data):
     except Exception as e: 
         print(f"Error storing Spotify data: {str(e)}")
 
-# Get access token
 credentials = base64.b64encode(f"{client_id}:{client_secret}".encode('utf-8')).decode('utf-8')
 auth_options = {
     'url': 'https://accounts.spotify.com/api/token',
