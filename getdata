@@ -107,7 +107,8 @@ def store_spotify_data(data, cur, conn):
 
 def get_songlink_data(song_url, title): 
 
-    info_dict={}
+    song_dict={}
+
     #creates link to search on songlink (uses a link to song)
     base="https://api.song.link/v1-alpha.1/links?url="
     link=song_url
@@ -119,39 +120,16 @@ def get_songlink_data(song_url, title):
     data=json.loads(data)
     links=data["linksByPlatform"] 
     platforms=list(links.keys())
-    info_dict[title]=(platforms,len(platforms))
-    return(info_dict)
+    song_dict[title]=(platforms,len(platforms))
+    return(song_dict)
 
-def store_songlink_data(link, title):
-    file_name="songlink_data.json"
-    info=get_songlink_data(link, title)
-    info=json.dumps(info)
-    with open(file_name, "w") as f:
-        f.write(info)
+def store_songlink_data(data, cur, conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, platforms TEXT, number_platfroms INTEGER)")
+    for item in data:       
+        title=item["title"]
+        platforms=item["platforms"][0]
+        number=item["platforms"][1]
+        cur.execute("INSERT INTO songlink_data (title,platforms,number_platforms) VALUES (?, ?, ?)", (title, platforms, number))
+    conn.commit()
+    print("Songlink data stored in the database sucessfully!")
     return None
-
-
-
-
-def get_setlist_fm_data(): 
-    api_key = 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
-
-    artist_mbid = 'ARTIST_MBID'
-
-    url = f'https://api.setlist.fm/1.0/artist/{artist_mbid}/setlists'
-
-    headers = {
-        'Accept': 'application/json',
-        'x-api-key': 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
-}
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        data = response.json()
-
-    setlists = data['setlist']
-    for idx, setlist in enumerate(setlists, start=1):
-        print(f"Setlist {idx}: {setlist['eventDate']} - {setlist['venue']['name']}, {setlist['venue']['city']['name']}, {setlist['venue']['city']['state']}, {setlist['venue']['city']['country']['name']}")
-    else:
-        print(f"Error: {response.status_code} - {response.text}")
