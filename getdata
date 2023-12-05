@@ -124,11 +124,12 @@ def get_songlink_data(song_url, title):
     return(song_dict)
 
 def store_songlink_data(data, cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, platforms TEXT, number of platfroms INTEGER)")
+    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, platforms TEXT, number_platfroms INTEGER)")
     for item in data:
         title=item["title"]
         platforms=item["platforms"][0]
         number=item["platforms"][1]
-        cur.execute("INSERT INTO songlink_data (title,platforms,number of platforms) VALUES (?, ?, ?)", (title, platforms, number))
+        cur.execute("INSERT INTO songlink_data (title,platforms,number_platforms) VALUES (?, ?, ?)", (title, platforms, number))
         print("Songlink data stored in the database sucessfully!")
     return None
+
