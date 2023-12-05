@@ -69,17 +69,17 @@ def spotify_get_songs_by_artist(token, artist_id):
         return None
     
 
-token = get_spotify_token()
-artist_info = spotify_artist_search(token, "Beyonce")
-if artist_info:
+#token = get_spotify_token()
+#artist_info = spotify_artist_search(token, "Beyonce")
+#if artist_info:
     songs = spotify_get_songs_by_artist(token, artist_info)
     if songs:
         for idx, song in enumerate(songs):
             print(f"{idx + 1}. {song['name']}")
     else:
         print("No tracks found for this artist.")
-else:
-    print("No artist found with this name.")
+#else:
+   # print("No artist found with this name.")
 
 
 def setUpDatabase(db_name):
@@ -129,3 +129,29 @@ def store_songlink_data(link, title):
     with open(file_name, "w") as f:
         f.write(info)
     return None
+
+
+
+
+def get_setlist_fm_data(): 
+    api_key = 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
+
+    artist_mbid = 'ARTIST_MBID'
+
+    url = f'https://api.setlist.fm/1.0/artist/{artist_mbid}/setlists'
+
+    headers = {
+        'Accept': 'application/json',
+        'x-api-key': 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
+}
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+
+    setlists = data['setlist']
+    for idx, setlist in enumerate(setlists, start=1):
+        print(f"Setlist {idx}: {setlist['eventDate']} - {setlist['venue']['name']}, {setlist['venue']['city']['name']}, {setlist['venue']['city']['state']}, {setlist['venue']['city']['country']['name']}")
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
