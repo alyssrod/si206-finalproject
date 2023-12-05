@@ -1,8 +1,9 @@
+
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
 import sqlite3
-import requests
+from requests import post, get 
 import json
 import base64
 from bs4 import BeautifulSoup 
@@ -10,8 +11,77 @@ from bs4 import BeautifulSoup
 
 client_id = '4c16a651c8e94c769cdf11ad1bb033a5'
 client_secret = '2b5a3c867ff842b89a166674025eb7cc'
-client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
-sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager) #spotify object to access API
+
+def get_spotify_token():
+    auth_string = client_id + ":" + client_secret
+    auth_bytes = auth_string.encode("utf-8")
+    auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
+
+    url = 'https://accounts.spotify.com/api/token'
+    headers =  {
+        'Authorization': 'Basic ' + auth_base64,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }  
+    data = {'grant_type': 'client_credentials'}
+    result = post(url, headers=headers, data=data)
+    result_json = json.loads(result.content)
+    token = result_json['access_token']
+    return token 
+
+def get_spotify_auth_header(token): 
+    return {"Authorization": "Bearer " + token}
+
+def spotify_artist_search(token, artist_name):
+    url = "https://api.spotify.com/v1/search"
+    headers = get_spotify_auth_header(token)
+    query = f"q={artist_name}&type=artist&limit=1"
+    query_url = url + '?' + query
+    result = get(query_url, headers=headers)
+    result_json = json.loads(result.content)['artists']['items']
+
+    if len(result_json) == 0:
+        print("No artist found with this name.")
+        return None
+
+    artist_info = result_json[0]
+    print("Artist info:", artist_info)
+    
+    return artist_info
+def spotify_get_songs_by_artist(token, artist_id): 
+    
+    if not artist_id or 'id' not in artist_id:
+        print("No artist found with this name.")
+        return None
+
+    artist_id = artist_id['id']
+    url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks?country=US"
+    headers = get_spotify_auth_header(token)
+    result = {
+        **get_spotify_auth_header(token),
+        'Content-Type': 'application/json'
+    }
+    result = get(url, headers=headers)
+    if result.status_code == 200:
+        result_json = json.loads(result.content)["tracks"]
+        return result_json
+    
+    else:
+        print(f"Error getting top tracks: {result.content}")
+        return None
+    
+
+token = get_spotify_token()
+artist_info = spotify_artist_search(token, "Beyonce")
+if artist_info:
+    songs = spotify_get_songs_by_artist(token, artist_info)
+    if songs:
+        for idx, song in enumerate(songs):
+            print(f"{idx + 1}. {song['name']}")
+    else:
+        print("No tracks found for this artist.")
+else:
+    print("No artist found with this name.")
+
 
 def setUpDatabase(db_name):
     path = os.path.dirname(os.path.abspath(__file__))
@@ -20,20 +90,8 @@ def setUpDatabase(db_name):
     return cur, conn
 
 cur, conn = setUpDatabase('final-database.db')
-
-def get_spotify_data(api_key): 
-    '''
-    Make requests to the Spotify API using the provided API key   
-    Implement logic to get data about songs, artists, and streams
-    '''
-    endpoint = 'https://api.spotify.com/v1/search'
-    headers = {'Authorization': 'Bearer ' + api_key}
-    response = requests.get(endpoint, headers=headers)
-    data = response.json()
-    print(data)
-    return data 
-
-def store_spotify_data(data): 
+    
+def store_spotify_data(data, cur, conn): 
     try: 
         cur.execute("CREATE TABLE IF NOT EXISTS spotify_data (song_title TEXT, artist TEXT, album TEXT, popularity INTEGER)")
         for track in data['tracks']['items']:
@@ -46,55 +104,3 @@ def store_spotify_data(data):
         print("Spotify data stored in the database successfully!")
     except Exception as e: 
         print(f"Error storing Spotify data: {str(e)}")
-
-credentials = base64.b64encode(f"{client_id}:{client_secret}".encode('utf-8')).decode('utf-8')
-auth_options = {
-    'url': 'https://accounts.spotify.com/api/token',
-    'headers': {
-        'Authorization': 'Basic ' + credentials
-    },
-    'form': {
-        'grant_type': 'client_credentials'
-    },
-    'json': True
-}
-response = requests.post(auth_options['url'], headers=auth_options['headers'], data=auth_options['form'])
-if response.status_code == 200:
-    token = response.json().get('access_token')
-    spotify_data = get_spotify_data(token)
-    store_spotify_data(spotify_data)
-else:
-    print(f"Error: {response.status_code}")
-    print(response.text)
-
-
-def get_openwhyd_data(api_url):
-    '''
-    Make requests to the OpenWhyd API and retrieve data
-    '''
-    response = requests.get(api_url)
-    data = response.json()
-    return data
-
-def store_openwhyd_data(data, cur, conn):
-    '''
-    Store the data retrieved from the OpenWhyd API in the database
-    '''
-    try:
-        cur.execute("CREATE TABLE IF NOT EXISTS openwhyd_data (title TEXT, artist TEXT, genre TEXT)")
-        for track in data['tracks']:
-            title = track['title']
-            artist = track['user']['name']
-            genre = track['genre']
-            cur.execute("INSERT INTO openwhyd_data (title, artist, genre) VALUES (?, ?, ?)", (title, artist, genre))
-        conn.commit()
-        print("OpenWhyd data stored in the database successfully!")
-    except Exception as e:
-        print(f"Error storing OpenWhyd data: {str(e)}")
-
-api_url = "https://openwhyd.org/hot/electro"
-try:
-    openwhyd_data = get_openwhyd_data(api_url)
-    store_openwhyd_data(openwhyd_data, cur, conn)
-except Exception as e:
-    print(f"Error: {str(e)}")
