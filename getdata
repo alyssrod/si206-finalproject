@@ -4,6 +4,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import os
 import sqlite3
 from requests import post, get 
+import requests
 import json
 import base64
 from bs4 import BeautifulSoup 
@@ -124,13 +125,13 @@ def get_songlink_data(song_url, title):
     return(song_dict)
 
 def store_songlink_data(data, cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, platforms TEXT, number_platfroms INTEGER)")
-    for item in data:       
-        title=item["title"]
-        platforms=item["platforms"][0]
-        number=item["platforms"][1]
-        cur.execute("INSERT INTO songlink_data (title,platforms,number_platforms) VALUES (?, ?, ?)", (title, platforms, number))
+    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, number_platforms INTEGER)")
+    for item in data:    
+        title=item
+        number=data[item][1]
+        cur.execute("INSERT INTO songlink_data (title,number_platforms) VALUES (?, ?)", (title, number))
     conn.commit()
-    print("Songlink data stored in the database sucessfully!")
     return None
+
+
 
