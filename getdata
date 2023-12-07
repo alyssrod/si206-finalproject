@@ -4,6 +4,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import os
 import sqlite3
 from requests import post, get 
+import requests
 import json
 import base64
 from bs4 import BeautifulSoup 
@@ -212,18 +213,18 @@ def get_songlink_data(song_url, title):
     return(song_dict)
 
 def store_songlink_data(data, cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, platforms TEXT, number_platfroms INTEGER)")
-    for item in data:       
-        title=item["title"]
-        platforms=item["platforms"][0]
-        number=item["platforms"][1]
-        cur.execute("INSERT INTO songlink_data (title,platforms,number_platforms) VALUES (?, ?, ?)", (title, platforms, number))
+    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, number_platforms INTEGER)")
+    for item in data:    
+        title=item
+        number=data[item][1]
+        cur.execute("INSERT INTO songlink_data (title,number_platforms) VALUES (?, ?)", (title, number))
     conn.commit()
-    print("Songlink data stored in the database sucessfully!")
     return None
 
 
 
+<<<<<<< HEAD
+=======
 def get_setlists_for_artists(api_key, artists):
     base_url = "https://api.setlist.fm/rest/1.0/search/setlists"
     headers = {
@@ -256,3 +257,4 @@ result_setlists = get_setlists_for_artists(api_key, artists_to_search)
 
 for idx, setlist in enumerate(result_setlists):
     print(f"{idx + 1}. Artist: {setlist['artist']['name']}, Date: {setlist['eventDate']}, Venue: {setlist['venue']['name']}")
+>>>>>>> 7fea7589e484064ce8019d3377131f90703ef671
