@@ -113,10 +113,9 @@ def store_spotify_data(track, cur, conn):
         print(f"Error storing Spotify data: {str(e)}")
 
 def create_database():
-    conn = sqlite3.connect('spotify_database.db')
+    conn = sqlite3.connect('final-database.db')
     c = conn.cursor()
 
-    # Create table to store artist information
     c.execute('''
               CREATE TABLE IF NOT EXISTS artists (
                   id TEXT PRIMARY KEY,
@@ -126,7 +125,6 @@ def create_database():
               )
               ''')
 
-    # Create table to store songs
     c.execute('''
               CREATE TABLE IF NOT EXISTS songs (
                   id TEXT PRIMARY KEY,
