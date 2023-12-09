@@ -1,4 +1,3 @@
-
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
@@ -73,6 +72,9 @@ def spotify_get_songs_by_artist(token, artist_id):
         return None
     
 
+#list of links for songs to put into songlink
+songlink_urls=[]
+
 token = get_spotify_token()
 artist_info = spotify_artist_search(token, "Beyonce")
 if artist_info:
@@ -80,21 +82,24 @@ if artist_info:
     if songs:
         for idx, song in enumerate(songs):
             print(f"{idx + 1}. {song['name']}")
+        for song in songs:
+            songlink_input=(song["external_urls"]["spotify"])
+            songlink_urls.append(songlink_input)
     else:
         print("No tracks found for this artist.")
 else:
     print("No artist found with this name.")
 
 
-#def setUpDatabase(db_name):
+def setUpDatabase(db_name):
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
-    #return cur, conn
+    return cur, conn
 
-#cur, conn = setUpDatabase('final-database.db')
+cur, conn = setUpDatabase('final-database.db')
     
-#def store_spotify_data(track, cur, conn): 
+def store_spotify_data(track, cur, conn): 
     try: 
         cur.execute("CREATE TABLE IF NOT EXISTS spotify_data (song_title TEXT, artist TEXT, album TEXT, popularity INTEGER)")
         song_title = track['name']
@@ -106,8 +111,6 @@ else:
         print("Spotify data stored in the database successfully!")
     except Exception as e: 
         print(f"Error storing Spotify data: {str(e)}")
-
-#cur, conn = setUpDatabase('final-database.db')
 
 def create_database():
     conn = sqlite3.connect('spotify_database.db')
@@ -140,7 +143,7 @@ def insert_artist_info(artist_info):
     conn = sqlite3.connect('spotify_database.db')
     c = conn.cursor()
 
-    # Insert or update artist information
+
     c.execute('''
               INSERT OR REPLACE INTO artists (id, name, followers, popularity)
               VALUES (?, ?, ?, ?)
@@ -153,39 +156,43 @@ def insert_songs(songs, artist_id):
     conn = sqlite3.connect('spotify_database.db')
     c = conn.cursor()
 
-    # Insert songs
     for song in songs:
-        c.execute('''
-                  INSERT INTO songs (id, name, artist_id)
-                  VALUES (?, ?, ?)
-                  ''', (song['id'], song['name'], artist_id))
+        song_id = song['id']
+
+        c.execute("SELECT id FROM songs WHERE id=?", (song_id,))
+        existing_song = c.fetchone()
+
+        if existing_song is None:
+            c.execute('''
+                      INSERT INTO songs (id, name, artist_id)
+                      VALUES (?, ?, ?)
+                      ''', (song_id, song['name'], artist_id))
 
     conn.commit()
     conn.close()
 
-# Your existing code here ...
 
-# Create the database tables
+
+
 create_database()
 
-# Get Spotify token
+
 token = get_spotify_token()
 
-# Search for the artist
 artist_info = spotify_artist_search(token, "Beyonce")
 
 if artist_info:
-    # Insert artist information into the database
+
     insert_artist_info(artist_info)
 
-    # Get songs by the artist
+
     songs = spotify_get_songs_by_artist(token, artist_info)
 
     if songs:
-        # Insert songs into the database
+
         insert_songs(songs, artist_info['id'])
 
-        # Print the songs
+
         for idx, song in enumerate(songs):
             print(f"{idx + 1}. {song['name']}")
     else:
@@ -194,37 +201,42 @@ else:
     print("No artist found with this name.")
 
 
-def get_songlink_data(song_url, title): 
+def get_songlink_data(song_url): 
 
     song_dict={}
 
-    #creates link to search on songlink (uses a link to song)
     base="https://api.song.link/v1-alpha.1/links?url="
     link=song_url
     full_link=base+link
 
-    #gets what platfroms a song appears on
     response=requests.get(full_link)
     data=response.text
     data=json.loads(data)
     links=data["linksByPlatform"] 
     platforms=list(links.keys())
+
+    title= data["entitiesByUniqueId"]
+    title=list(title.values())
+    title=title[0]["title"]
     song_dict[title]=(platforms,len(platforms))
     return(song_dict)
 
 def store_songlink_data(data, cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, number_platforms INTEGER)")
-    for item in data:    
-        title=item
-        number=data[item][1]
+    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, number_platforms INTEGER)")   
+    for item in data:
+        for key in item:
+            title=key
+            number=item[key][1]
         cur.execute("INSERT INTO songlink_data (title,number_platforms) VALUES (?, ?)", (title, number))
     conn.commit()
     return None
 
+songlink_results=[]
+for item in songlink_urls:
+    result=get_songlink_data(item)
+    songlink_results.append(result)
+#store_songlink_data(songlink_results, cur, conn) #runs on all songs through spotify fuction
 
-
-<<<<<<< HEAD
-=======
 def get_setlists_for_artists(api_key, artists):
     base_url = "https://api.setlist.fm/rest/1.0/search/setlists"
     headers = {
@@ -257,4 +269,21 @@ result_setlists = get_setlists_for_artists(api_key, artists_to_search)
 
 for idx, setlist in enumerate(result_setlists):
     print(f"{idx + 1}. Artist: {setlist['artist']['name']}, Date: {setlist['eventDate']}, Venue: {setlist['venue']['name']}")
->>>>>>> 7fea7589e484064ce8019d3377131f90703ef671
+
+
+def store_setlists_for_artists(data,cur,conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS setlist_data (artist TEXT, date TEXT, venue TEXT, song TEXT)")
+    for item in data:   
+        artist=item["artist"]["name"]
+        date=item["eventDate"]
+        venue=item["venue"]["name"]
+        all_sets=item["sets"]
+        for set in all_sets:
+            for song in all_sets["set"]:
+                for item in song["song"]:
+                    final_song=item["name"]
+                    cur.execute("INSERT INTO setlist_data (artist,date,venue,song) VALUES (?, ?,?,?)", (artist,date,venue,final_song))
+    conn.commit()
+    return None
+
+#store_setlists_for_artists(result_setlists,cur,conn)
