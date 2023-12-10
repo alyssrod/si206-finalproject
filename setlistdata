@@ -1,0 +1,64 @@
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+import os
+import sqlite3
+from requests import post, get 
+import requests
+import json
+import base64
+from bs4 import BeautifulSoup 
+import requests
+
+
+
+
+def get_setlists_for_artists(api_key, artists):
+    base_url = "https://api.setlist.fm/rest/1.0/search/setlists"
+    headers = {
+        'Accept': 'application/json',
+        'x-api-key': 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
+    }
+
+    all_setlists = []
+
+    for artist in artists:
+        params = {
+            'artistName': artist
+        }
+
+        response = requests.get(base_url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            setlists = response.json()['setlist']
+            all_setlists.extend(setlists)
+        else:
+            print(f"Error getting setlists for {artist}: {response.content}")
+
+    return all_setlists
+
+api_key = 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
+
+artists_to_search = ["Beyonce", "Coldplay", "Ed Sheeran"]
+
+result_setlists = get_setlists_for_artists(api_key, artists_to_search)
+
+for idx, setlist in enumerate(result_setlists):
+    print(f"{idx + 1}. Artist: {setlist['artist']['name']}, Date: {setlist['eventDate']}, Venue: {setlist['venue']['name']}")
+
+
+def store_setlists_for_artists(data,cur,conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS setlist_data (artist TEXT, date TEXT, venue TEXT, song TEXT)")
+    for item in data:   
+        artist=item["artist"]["name"]
+        date=item["eventDate"]
+        venue=item["venue"]["name"]
+        all_sets=item["sets"]
+        for set in all_sets:
+            for song in all_sets["set"]:
+                for item in song["song"]:
+                    final_song=item["name"]
+                    cur.execute("INSERT INTO setlist_data (artist,date,venue,song) VALUES (?, ?,?,?)", (artist,date,venue,final_song))
+    conn.commit()
+    return None
+
+#store_setlists_for_artists(result_setlists,cur,conn)
