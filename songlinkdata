@@ -1,1 +1,36 @@
+def get_songlink_data(song_url): 
+
+    song_dict={}
+
+    base="https://api.song.link/v1-alpha.1/links?url="
+    link=song_url
+    full_link=base+link
+
+    response=requests.get(full_link)
+    data=response.text
+    data=json.loads(data)
+    links=data["linksByPlatform"] 
+    platforms=list(links.keys())
+
+    title= data["entitiesByUniqueId"]
+    title=list(title.values())
+    title=title[0]["title"]
+    song_dict[title]=(platforms,len(platforms))
+    return(song_dict)
+
+def store_songlink_data(data, cur, conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, number_platforms INTEGER)")   
+    for item in data:
+        for key in item:
+            title=key
+            number=item[key][1]
+        cur.execute("INSERT INTO songlink_data (title,number_platforms) VALUES (?, ?)", (title, number))
+    conn.commit()
+    return None
+
+songlink_results=[]
+for item in songlink_urls:
+    result=get_songlink_data(item)
+    songlink_results.append(result)
+#store_songlink_data(songlink_results, cur, conn) #runs on all songs through spotify fuction
 
