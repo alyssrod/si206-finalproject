@@ -12,16 +12,19 @@ def plot_popularity_histogram(data):
 
     flattened_data = [item[0] for item in data]
 
-    n, bins, patches = plt.hist(flattened_data, bins=20, color=cm.plasma_r((flattened_data - min(flattened_data)) / (max(flattened_data) - min(flattened_data))), edgecolor='black')
+    if flattened_data:
+        n, bins, patches = plt.hist(flattened_data, bins=20, color=cm.plasma_r((flattened_data - min(flattened_data)) / (max(flattened_data) - min(flattened_data))), edgecolor='black')
 
-    plt.xlabel('Popularity Score')
-    plt.ylabel('Frequency')
-    plt.title('Distribution of Song Popularity Scores')
-    plt.grid(axis='y', alpha=0.75)
-    plt.colorbar(patches)
+        plt.xlabel('Popularity Score')
+        plt.ylabel('Frequency')
+        plt.title('Distribution of Song Popularity Scores')
+        plt.grid(axis='y', alpha=0.75)
+        plt.colorbar(patches)
 
-    plt.tight_layout()
-    plt.show()
+        plt.tight_layout()
+        plt.show()
+    else:
+        print("No data available for plotting.")
 
 conn = sqlite3.connect('final-database.db')
 cur = conn.cursor()
@@ -31,4 +34,5 @@ popularity_scores_data = get_popularity_scores(cur)
 plot_popularity_histogram(popularity_scores_data)
 
 conn.close()
+
 
