@@ -8,11 +8,12 @@ import json
 import base64
 from bs4 import BeautifulSoup 
 import requests
+from spotifydata import get_spotify_token, spotify_artist_search, spotify_get_songs_by_artist
 
+conn = sqlite3.connect('final-database.db')
+cur = conn.cursor()
 
-
-
-def get_songlink_data(song_url): 
+def get_songlink_data(song_url, title): 
 
     song_dict={}
 
@@ -26,25 +27,19 @@ def get_songlink_data(song_url):
     links=data["linksByPlatform"] 
     platforms=list(links.keys())
 
-    title= data["entitiesByUniqueId"]
-    title=list(title.values())
-    title=title[0]["title"]
     song_dict[title]=(platforms,len(platforms))
     return(song_dict)
 
-def store_songlink_data(data, cur, conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (title TEXT, number_platforms INTEGER)")   
+def store_songlink_data(data,cur,conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (song_id INTEGER, number_platforms INTEGER)")   
     for item in data:
         for key in item:
             title=key
+            query="SELECT id FROM song_ids WHERE song_name= ?"
+            cur.execute(query, (title,))
+            song_id=cur.fetchone()
+            song_id=song_id[0]
             number=item[key][1]
-        cur.execute("INSERT INTO songlink_data (title,number_platforms) VALUES (?, ?)", (title, number))
+        cur.execute("INSERT INTO songlink_data (song_id,number_platforms) VALUES (?, ?)", (song_id, number))
     conn.commit()
     return None
-
-songlink_results=[]
-for item in songlink_urls:
-    result=get_songlink_data(item)
-    songlink_results.append(result)
-#store_songlink_data(songlink_results, cur, conn) #runs on all songs through spotify fuction
-
