@@ -1,1 +1,51 @@
+import matplotlib.pyplot as plt
 
+
+def get_song_platform_data(cur):
+    cur.execute("SELECT song_name, number_platforms FROM song_ids JOIN songlink_data ON song_ids.id = songlink_data.song_id")
+    rows = cur.fetchall()
+    return rows
+
+def store_songlink_data(data, cur, conn):
+    cur.execute("CREATE TABLE IF NOT EXISTS songlink_data (song_id INTEGER, number_platforms INTEGER)")   
+
+    for item in data:
+        for key in item:
+            title = key
+            query = "SELECT id FROM song_ids WHERE song_name = ?"
+            cur.execute(query, (title,))
+            song_id = cur.fetchone()
+            if song_id:
+                song_id = song_id[0]
+                number = item[key][1]
+                cur.execute("INSERT INTO songlink_data (song_id, number_platforms) VALUES (?, ?)", (song_id, number))
+
+    conn.commit()
+    return None
+
+
+
+def plot_table(data):
+    columns = ('Song', 'Number of Platforms')
+    rows = data
+
+    fig, ax = plt.subplots()
+    ax.axis('tight')
+    ax.axis('off')
+    ax.table(cellText=rows, colLabels=columns, cellLoc='center', loc='center')
+
+    plt.show()
+
+
+import sqlite3
+
+conn = sqlite3.connect('final-database.db')
+cur = conn.cursor()
+
+song_platform_data = get_song_platform_data(cur)
+
+table_data = [(row[0], row[1]) for row in song_platform_data]
+
+plot_table(table_data)
+
+conn.close()
