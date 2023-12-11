@@ -1,1 +1,36 @@
+import matplotlib.pyplot as plt
+import sqlite3
+
+def get_artist_popularity_data(cur):
+    cur.execute("SELECT artist_name, popularity_score FROM artists")
+    rows = cur.fetchall()
+    return rows
+
+def plot_artist_popularity_chart(data):
+    artists, popularity_scores = zip(*data)
+    
+    plt.figure(figsize=(10, 6))
+    plt.bar(artists, popularity_scores, color='salmon')
+    plt.xlabel('Artists')
+    plt.ylabel('Popularity Score')
+    plt.title('Artist Popularity Scores')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    
+    plt.show()
+
+conn = sqlite3.connect('final-database.db')
+cur = conn.cursor()
+
+artist_popularity_data = get_artist_popularity_data(cur)
+
+plot_artist_popularity_chart(artist_popularity_data)
+
+conn.close()
+
+
+    cur.execute("INSERT INTO spotify_data (song_title, artist, album, popularity) VALUES (?, ?, ?, ?)",
+                (song_title, artist, album, popularity))
+    conn.commit()
+    print("Spotify data stored in the database successfully!")"""
 
