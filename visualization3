@@ -10,7 +10,7 @@ def get_popularity_scores(cur):
 def plot_popularity_histogram(data):
     plt.figure(figsize=(10, 6))
 
-    flattened_data = [item for sublist in data for item in sublist]
+    flattened_data = [item[0] for item in data]
 
     n, bins, patches = plt.hist(flattened_data, bins=20, color=cm.plasma_r((flattened_data - min(flattened_data)) / (max(flattened_data) - min(flattened_data))), edgecolor='black')
 
@@ -31,3 +31,4 @@ popularity_scores_data = get_popularity_scores(cur)
 plot_popularity_histogram(popularity_scores_data)
 
 conn.close()
+
