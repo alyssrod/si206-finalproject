@@ -1,26 +1,30 @@
 import matplotlib.pyplot as plt
 import sqlite3
 
-def get_artist_popularity_data(cur):
-    cur.execute("SELECT artist_name, popularity_score FROM artists")
-    rows = cur.fetchall()
-    return rows
+def get_popularity_scores(cur):
+    cur.execute("SELECT popularity FROM spotify_data")
+    popularity_scores = cur.fetchall()
+    return popularity_scores
 
-def plot_artist_popularity_chart(data):
-    artists, popularity_scores = zip(*data)
-    
+def plot_popularity_histogram(data):
     plt.figure(figsize=(10, 6))
-    plt.bar(artists, popularity_scores, color='salmon')
-    plt.xlabel('Artists')
-    plt.ylabel('Popularity Score')
-    plt.title('Artist Popularity Scores')
-    plt.xticks(rotation=45, ha='right')
+    plt.hist(data, bins=20, color='skyblue', edgecolor='black')
+    plt.xlabel('Popularity Score')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of Song Popularity Scores')
+    plt.grid(axis='y', alpha=0.75)
     plt.tight_layout()
-    
+
     plt.show()
 
 conn = sqlite3.connect('final-database.db')
 cur = conn.cursor()
+
+popularity_scores_data = get_popularity_scores(cur)
+
+plot_popularity_histogram(popularity_scores_data)
+
+conn.close()
 
 artist_popularity_data = get_artist_popularity_data(cur)
 
