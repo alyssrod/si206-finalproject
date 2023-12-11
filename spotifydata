@@ -45,7 +45,6 @@ def spotify_artist_search(token, artist_name):
         return None
 
     artist_info = result_json[0]
-    print("Artist info:", artist_info)
     
     return artist_info
 
@@ -71,26 +70,6 @@ def spotify_get_songs_by_artist(token, artist_id):
         print(f"Error getting top tracks: {result.content}")
         return None
     
-
-#list of links for songs to put into songlink
-songlink_urls=[]
-
-token = get_spotify_token()
-artist_info = spotify_artist_search(token, "Beyonce")
-if artist_info:
-    songs = spotify_get_songs_by_artist(token, artist_info)
-    if songs:
-        for idx, song in enumerate(songs):
-            print(f"{idx + 1}. {song['name']}")
-        for song in songs:
-            songlink_input=(song["external_urls"]["spotify"])
-            songlink_urls.append(songlink_input)
-    else:
-        print("No tracks found for this artist.")
-else:
-    print("No artist found with this name.")
-
-
 def setUpDatabase(db_name):
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
@@ -101,22 +80,39 @@ cur, conn = setUpDatabase('final-database.db')
     
 def store_spotify_data(track, cur, conn): 
     try: 
-        cur.execute("CREATE TABLE IF NOT EXISTS spotify_data (song_title TEXT, artist TEXT, album TEXT, popularity INTEGER)")
+        cur.execute("CREATE TABLE IF NOT EXISTS spotify_data (song_id INTEGER, artist_id INTEGER, album TEXT, popularity INTEGER)")
         song_title = track['name']
+        query="SELECT id FROM song_ids WHERE song_name= ?"
+        cur.execute(query, (song_title,))
+        song_id=cur.fetchone()
+        song_id=song_id[0]
         artist = track['artists'][0]['name']
+        query="SELECT id FROM artist_ids WHERE artist_name= ?"
+        cur.execute(query, (artist,))
+        artist_id=cur.fetchone()
+        artist_id=artist_id[0]
         album = track['album']['name']
         popularity = track['popularity']
-        cur.execute("INSERT INTO spotify_data (song_title, artist, album, popularity) VALUES (?, ?, ?, ?)", (song_title, artist, album, popularity))
+        cur.execute("INSERT INTO spotify_data (song_id, artist_id, album, popularity) VALUES (?, ?, ?, ?)", (song_id, artist_id, album, popularity))
         conn.commit()
-        print("Spotify data stored in the database successfully!")
+        #print("Spotify data stored in the database successfully!")
     except Exception as e: 
         print(f"Error storing Spotify data: {str(e)}")
 
-def create_database():
-    conn = sqlite3.connect('final-database.db')
-    c = conn.cursor()
 
-    c.execute('''
+"""def create_final_database(cur, conn):
+    cur.execute('''
+              CREATE TABLE IF NOT EXISTS spotify_data (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  song_title TEXT,
+                  artist TEXT,
+                  album TEXT,
+                  popularity INTEGER
+              )
+              ''')
+    conn.commit()
+
+    cur.execute('''
               CREATE TABLE IF NOT EXISTS artists (
                   id TEXT PRIMARY KEY,
                   name TEXT,
@@ -124,8 +120,9 @@ def create_database():
                   popularity INTEGER
               )
               ''')
+    conn.commit()
 
-    c.execute('''
+    cur.execute('''
               CREATE TABLE IF NOT EXISTS songs (
                   id TEXT PRIMARY KEY,
                   name TEXT,
@@ -133,67 +130,56 @@ def create_database():
                   FOREIGN KEY (artist_id) REFERENCES artists(id)
               )
               ''')
-
     conn.commit()
-    conn.close()
 
-def insert_artist_info(artist_info):
-    conn = sqlite3.connect('spotify_database.db')
-    c = conn.cursor()
-
-
-    c.execute('''
+def insert_artist_info(artist_info, cur, conn):
+    cur.execute('''
               INSERT OR REPLACE INTO artists (id, name, followers, popularity)
               VALUES (?, ?, ?, ?)
               ''', (artist_info['id'], artist_info['name'], artist_info['followers']['total'], artist_info['popularity']))
 
     conn.commit()
-    conn.close()
+    print("Artist info stored in the database successfully!")
 
-def insert_songs(songs, artist_id):
-    conn = sqlite3.connect('spotify_database.db')
-    c = conn.cursor()
+def insert_songs(songs, artist_id, cur, conn):
+    cur, conn = setUpDatabase('final-database.db')
+    cur.execute("SELECT id FROM artists WHERE id=?", (artist_id,))
+    existing_artist = cur.fetchone()
+
+    if existing_artist is None:
+        print("Error: Artist not found in the artists table.")
+        conn.close()
+        return
 
     for song in songs:
         song_id = song['id']
+        print("Inserting song:", song_id)
 
-        c.execute("SELECT id FROM songs WHERE id=?", (song_id,))
-        existing_song = c.fetchone()
+        cur.execute("SELECT id FROM songs WHERE id=?", (song_id,))
+        existing_song = cur.fetchone()
+        print("Existing Song:", existing_song)
 
         if existing_song is None:
-            c.execute('''
-                      INSERT INTO songs (id, name, artist_id)
-                      VALUES (?, ?, ?)
-                      ''', (song_id, song['name'], artist_id))
+            cur.execute('''
+                        INSERT INTO songs (id, name, artist_id)
+                        VALUES (?, ?, ?)
+                        ''', (song_id, song['name'], artist_id))
+            print("Song inserted:", song_id)
+        else:
+            print("Song already exists:", song_id)
 
     conn.commit()
     conn.close()
 
+def store_spotify_data(track, cur, conn):
+    song_title = track['name']
+    artist = track['artists'][0]['name']
+    album = track['album']['name']
+    popularity = track['popularity']
 
+    print(f"Storing Spotify data: {song_title}, {artist}, {album}, {popularity}")
 
-
-create_database()
-
-
-token = get_spotify_token()
-
-artist_info = spotify_artist_search(token, "Beyonce")
-
-if artist_info:
-
-    insert_artist_info(artist_info)
-
-
-    songs = spotify_get_songs_by_artist(token, artist_info)
-
-    if songs:
-
-        insert_songs(songs, artist_info['id'])
-
-
-        for idx, song in enumerate(songs):
-            print(f"{idx + 1}. {song['name']}")
-    else:
-        print("No tracks found for this artist.")
-else:
-    print("No artist found with this name.")
+    cur.execute("INSERT INTO spotify_data (song_title, artist, album, popularity) VALUES (?, ?, ?, ?)",
+                (song_title, artist, album, popularity))
+    conn.commit()
+    print("Spotify data stored in the database successfully!")"""
