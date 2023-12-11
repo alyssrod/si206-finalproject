@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import requests
 
 
+
 client_id = '4c16a651c8e94c769cdf11ad1bb033a5'
 client_secret = '2b5a3c867ff842b89a166674025eb7cc'
 
