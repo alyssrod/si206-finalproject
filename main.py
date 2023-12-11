@@ -19,7 +19,7 @@ cur.execute("CREATE TABLE IF NOT EXISTS song_ids(id INTEGER primary key, song_na
 conn.commit()
 
 #selects artist from a list and checks if already in artist id table 
-artist_to_search=["Beyoncé", "Taylor Swift", "Hozier"]
+artist_to_search=["Beyoncé", "Taylor Swift", "Hozier", "Ed Sheeran", "BTS", "Matt Maeson", "Olivia Rodrigo", "Conan Gray", "Lovejoy", "Joji"]
 for x in range(len(artist_to_search)):
     artist=artist_to_search[x] #add method to check if artist is in id table and continue if is
     cur.execute("SELECT artist_name FROM artist_ids")
@@ -89,5 +89,5 @@ store_songlink_data(songlink_results, cur, conn)
 api_key = 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
 artists_to_search = artist
 result_setlists = get_setlists_for_artists(api_key, artists_to_search)
-store_setlists_for_artists(result_setlists,cur,conn)
+store_setlists_for_artists(result_setlists,songlink_titles,cur,conn)
 store_tours_for_artists(result_setlists,cur,conn)
