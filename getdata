@@ -69,6 +69,7 @@ def spotify_get_songs_by_artist(token, artist_id):
         print(f"Error getting top tracks: {result.content}")
         print(f"Artist ID: {artist_id}")
 
+    
     return None
 
 def setUpDatabase(db_name):
