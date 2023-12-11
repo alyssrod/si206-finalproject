@@ -27,10 +27,3 @@ artist_popularity_data = get_artist_popularity_data(cur)
 plot_artist_popularity_chart(artist_popularity_data)
 
 conn.close()
-
-
-    cur.execute("INSERT INTO spotify_data (song_title, artist, album, popularity) VALUES (?, ?, ?, ?)",
-                (song_title, artist, album, popularity))
-    conn.commit()
-    print("Spotify data stored in the database successfully!")"""
-
