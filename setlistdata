@@ -8,57 +8,86 @@ import json
 import base64
 from bs4 import BeautifulSoup 
 import requests
+from spotifydata import get_spotify_token, spotify_artist_search, spotify_get_songs_by_artist
 
+conn = sqlite3.connect('final-database.db')
+cur = conn.cursor()
 
-
-
-def get_setlists_for_artists(api_key, artists):
+def get_setlists_for_artists(api_key, artist):
     base_url = "https://api.setlist.fm/rest/1.0/search/setlists"
     headers = {
         'Accept': 'application/json',
         'x-api-key': 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
     }
-
+    
     all_setlists = []
 
-    for artist in artists:
-        params = {
-            'artistName': artist
+    params = {
+        'artistName': artist
         }
 
-        response = requests.get(base_url, params=params, headers=headers)
+    response = requests.get(base_url, params=params, headers=headers)
 
-        if response.status_code == 200:
-            setlists = response.json()['setlist']
-            all_setlists.extend(setlists)
-        else:
-            print(f"Error getting setlists for {artist}: {response.content}")
+    if response.status_code == 200:
+        setlists = response.json()['setlist']
+        all_setlists.extend(setlists)
+    else:
+        print(f"Error getting setlists for {artist}: {response.content}")
 
     return all_setlists
 
-api_key = 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
-
-artists_to_search = ["Beyonce", "Coldplay", "Ed Sheeran"]
-
-result_setlists = get_setlists_for_artists(api_key, artists_to_search)
-
-for idx, setlist in enumerate(result_setlists):
-    print(f"{idx + 1}. Artist: {setlist['artist']['name']}, Date: {setlist['eventDate']}, Venue: {setlist['venue']['name']}")
-
-
 def store_setlists_for_artists(data,cur,conn):
-    cur.execute("CREATE TABLE IF NOT EXISTS setlist_data (artist TEXT, date TEXT, venue TEXT, song TEXT)")
-    for item in data:   
+
+    song_count_dict={}
+
+    cur.execute("CREATE TABLE IF NOT EXISTS setlist_song_data (artist_id INTEGER, song_id INTEGER, song_occurences INTEGER)")
+    for item in data: 
         artist=item["artist"]["name"]
-        date=item["eventDate"]
-        venue=item["venue"]["name"]
+        try:
+            query="SELECT id FROM artist_ids WHERE artist_name= ?" 
+            cur.execute(query, (artist,))
+            artist_id=cur.fetchone()
+            artist_id=artist_id[0]
+        except:
+            continue
         all_sets=item["sets"]
         for set in all_sets:
             for song in all_sets["set"]:
                 for item in song["song"]:
-                    final_song=item["name"]
-                    cur.execute("INSERT INTO setlist_data (artist,date,venue,song) VALUES (?, ?,?,?)", (artist,date,venue,final_song))
+                    final_song=item["name"]  
+                    song_count_dict[final_song]=song_count_dict.get(final_song,0)+1
+        
+    cur.execute("SELECT song_name FROM song_ids")
+    potential_track_list=cur.fetchall()
+
+    for track in potential_track_list: 
+        song_title = track[0]
+        song_count= song_count_dict.get(song_title,0)
+        query="SELECT id FROM song_ids WHERE song_name= ?"
+        cur.execute(query, (song_title,))
+        song_id=cur.fetchone()
+        song_id=song_id[0]
+        cur.execute("INSERT INTO setlist_song_data (artist_id,song_id, song_occurences) VALUES (?,?, ?)", (artist_id,song_id, song_count))
     conn.commit()
     return None
 
-#store_setlists_for_artists(result_setlists,cur,conn)
+def store_tours_for_artists(data,cur,conn):
+    limiter=0
+    cur.execute("CREATE TABLE IF NOT EXISTS setlist_data (artist_id INTEGER, date TEXT, venue TEXT)")
+    for item in data:
+        if limiter > 25:
+            break
+        else:
+            try:
+                artist=item["artist"]["name"]
+                query="SELECT id FROM artist_ids WHERE artist_name= ?" 
+                cur.execute(query, (artist,))
+                artist_id=cur.fetchone()
+                artist_id=artist_id[0]
+                date=item["eventDate"]
+                venue=item["venue"]["name"]
+                cur.execute("INSERT INTO setlist_data (artist_id,date,venue) VALUES (?, ?,?)", (artist_id,date,venue))
+                limiter+=1
+            except:
+                continue
+    conn.commit()
