@@ -1,29 +1,42 @@
-import matplotlib.pyplot as plt
+import spotipy
+import requests
+from spotipy.oauth2 import SpotifyClientCredentials
+import os
 import sqlite3
-
-def get_song_platform_data(cur):
-    cur.execute("SELECT song_name, number_platforms FROM song_ids JOIN songlink_data ON song_ids.id = songlink_data.song_id")
-    rows = cur.fetchall()
-    return rows
-
-def plot_bar_chart(data):
-    songs, platforms = zip(*data)
-    
-    plt.figure(figsize=(10, 6))
-    plt.bar(songs, platforms, color='skyblue')
-    plt.xlabel('Songs')
-    plt.ylabel('Number of Platforms')
-    plt.title('Number of Platforms per Song')
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-    
-    plt.show()
+from requests import post, get 
+import requests
+import json
+import base64
+from bs4 import BeautifulSoup 
+import matplotlib.pyplot as plt
 
 conn = sqlite3.connect('final-database.db')
 cur = conn.cursor()
 
-song_platform_data = get_song_platform_data(cur)
+def get_song_and_popularity(cur,conn):
+    songs_dict={}
+    cur.execute("SELECT song_name,popularity,song_occurences FROM spotify_data JOIN song_ids ON spotify_data.song_id=song_ids.id JOIN setlist_song_data ON setlist_song_data.song_id=song_ids.id JOIN artist_ids ON spotify_data.artist_id=artist_ids.id GROUP BY song_name")
+    info=cur.fetchall()
+    popularity_list=[]
+    occurences=[]
+    for item in info:
+        popularity_list.append(item[1])
+        occurences.append(item[2])
+    return popularity_list,occurences
 
-plot_bar_chart(song_platform_data)
+        
 
-conn.close()
+calculation=get_song_and_popularity(cur,conn)
+
+def visualize_song_and_popularity(calculation):
+    plt.figure(figsize=(10, 5))
+
+    plt.scatter(calculation[0], calculation[1], c='blue', label='Scatterplot of Popularity')
+    plt.title('Popularity and Setlists')
+    plt.xlabel('Song Popularity Score')
+    plt.ylabel('Occurences on Setlists')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+visualize_song_and_popularity(calculation)
