@@ -17,7 +17,7 @@ def create_histogram(cur, conn):
 
         fig, ax = plt.subplots(figsize=(12, 6))
         rects1 = ax.hist(song_ids, bins=bin_edges - 0.175, weights=avg_popularity, width=0.35, label='Average Popularity', color='skyblue')
-        rects2 = ax.hist(song_ids, bins=bin_edges + 0.175, weights=song_occurences, width=0.35, label='Song Occurrences', color='orange')
+        rects2 = ax.hist(song_ids, bins=bin_edges + 0.175, weights=song_occurences, width=0.35, label='Song Occurrences', color='red')
 
         ax.set_xlabel('Song ID Range')
         ax.set_ylabel('Scores')
