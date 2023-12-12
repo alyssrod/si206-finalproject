@@ -83,7 +83,7 @@ cur, conn = setUpDatabase('final-database.db')
 def store_spotify_data(track, cur, conn): 
     
     try: 
-        cur.execute("CREATE TABLE IF NOT EXISTS spotify_data (song_id INTEGER, artist_id INTEGER, album TEXT, popularity INTEGER)")
+        cur.execute("CREATE TABLE IF NOT EXISTS spotify_data (song_id INTEGER, artist_id INTEGER, popularity INTEGER)")
         song_title = track['name']
         query="SELECT id FROM song_ids WHERE song_name= ?"
         cur.execute(query, (song_title,))
@@ -94,9 +94,8 @@ def store_spotify_data(track, cur, conn):
         cur.execute(query, (artist,))
         artist_id=cur.fetchone()
         artist_id=artist_id[0]
-        album = track['album']['name']
         popularity = track['popularity']
-        cur.execute("INSERT INTO spotify_data (song_id, artist_id, album, popularity) VALUES (?, ?, ?, ?)", (song_id, artist_id, album, popularity))
+        cur.execute("INSERT INTO spotify_data (song_id, artist_id, popularity) VALUES (?, ?, ?)", (song_id, artist_id, popularity))
         conn.commit()
         #print("Spotify data stored in the database successfully!")
     except Exception as e: 
