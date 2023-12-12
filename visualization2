@@ -1,5 +1,4 @@
 import spotipy
-import requests
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
 import sqlite3
@@ -8,6 +7,7 @@ import requests
 import json
 import base64
 from bs4 import BeautifulSoup 
+import requests
 import matplotlib.pyplot as plt
 
 conn = sqlite3.connect('final-database.db')
