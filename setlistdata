@@ -14,13 +14,12 @@ conn = sqlite3.connect('final-database.db')
 cur = conn.cursor()
 
 def get_setlists_for_artists(api_key, artist):
-    
     base_url = "https://api.setlist.fm/rest/1.0/search/setlists"
     headers = {
         'Accept': 'application/json',
         'x-api-key': 'E0Wf7sQUC93BOCSNEfplxwC9CXC9rQ84_CTh'
     }
-    
+
     all_setlists = []
 
     params = {
@@ -37,7 +36,8 @@ def get_setlists_for_artists(api_key, artist):
 
     return all_setlists
 
-def store_setlists_for_artists(data,cur,conn):
+def store_setlists_for_artists(data,track_list,cur,conn):
+
     song_count_dict={}
 
     cur.execute("CREATE TABLE IF NOT EXISTS setlist_song_data (artist_id INTEGER, song_id INTEGER, song_occurences INTEGER)")
@@ -57,11 +57,10 @@ def store_setlists_for_artists(data,cur,conn):
                     final_song=item["name"]  
                     song_count_dict[final_song]=song_count_dict.get(final_song,0)+1
         
-    cur.execute("SELECT song_name FROM song_ids")
-    potential_track_list=cur.fetchall()
+    potential_track_list=track_list
 
     for track in potential_track_list: 
-        song_title = track[0]
+        song_title = track
         song_count= song_count_dict.get(song_title,0)
         query="SELECT id FROM song_ids WHERE song_name= ?"
         cur.execute(query, (song_title,))
@@ -72,11 +71,10 @@ def store_setlists_for_artists(data,cur,conn):
     return None
 
 def store_tours_for_artists(data,cur,conn):
-    
     limiter=0
     cur.execute("CREATE TABLE IF NOT EXISTS setlist_data (artist_id INTEGER, date TEXT, venue TEXT)")
     for item in data:
-        if limiter > 25:
+        if limiter > 10:
             break
         else:
             try:
@@ -92,3 +90,4 @@ def store_tours_for_artists(data,cur,conn):
             except:
                 continue
     conn.commit()
+    return None
