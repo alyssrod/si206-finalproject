@@ -46,6 +46,7 @@ def get_platforms_and_popularity(cur,conn):
 calculation=get_platforms_and_popularity(cur,conn)
 
 def visualize_platforms_and_popularity(calculation):
+    
     plt.figure(figsize=(10, 5))
 
     plt.subplot(1, 2, 1)

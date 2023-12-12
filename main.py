@@ -14,6 +14,7 @@ conn = sqlite3.connect('final-database.db')
 cur = conn.cursor()
 
 def get_setlists_for_artists(api_key, artist):
+    
     base_url = "https://api.setlist.fm/rest/1.0/search/setlists"
     headers = {
         'Accept': 'application/json',
@@ -71,6 +72,7 @@ def store_setlists_for_artists(data,track_list,cur,conn):
     return None
 
 def store_tours_for_artists(data,cur,conn):
+    
     limiter=0
     cur.execute("CREATE TABLE IF NOT EXISTS setlist_data (artist_id INTEGER, date TEXT, venue TEXT)")
     for item in data:

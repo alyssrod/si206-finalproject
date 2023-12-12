@@ -1,38 +1,32 @@
 import matplotlib.pyplot as plt
-import sqlite3
-from matplotlib import cm
 
-def get_popularity_scores(cur):
-    cur.execute("SELECT popularity FROM spotify_data")
-    popularity_scores = cur.fetchall()
-    return popularity_scores
+def create_histogram(cur, conn):
+    try:
+        cur.execute("SELECT artist_id, AVG(popularity) FROM spotify_data GROUP BY artist_id")
+        data = cur.fetchall()
 
-def plot_popularity_histogram(data):
-    plt.figure(figsize=(10, 6))
+        artist_ids, avg_popularity = zip(*data)
 
-    flattened_data = [item[0] for item in data]
+        artist_names = []
+        for artist_id in artist_ids:
+            cur.execute("SELECT artist_name FROM artist_ids WHERE id=?", (artist_id,))
+            artist_name = cur.fetchone()[0]
+            artist_names.append(artist_name)
 
-    if flattened_data:
-        n, bins, patches = plt.hist(flattened_data, bins=20, color=cm.plasma_r((flattened_data - min(flattened_data)) / (max(flattened_data) - min(flattened_data))), edgecolor='black')
-
-        plt.xlabel('Popularity Score')
-        plt.ylabel('Frequency')
-        plt.title('Distribution of Song Popularity Scores')
-        plt.grid(axis='y', alpha=0.75)
-        plt.colorbar(patches)
-
+        plt.figure(figsize=(10, 6))
+        plt.bar(artist_names, avg_popularity, color='skyblue')
+        plt.xlabel('Artist')
+        plt.ylabel('Average Popularity')
+        plt.title('Average Popularity of Songs by Artist')
+        plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
+
         plt.show()
-    else:
-        print("No data available for plotting.")
 
-conn = sqlite3.connect('final-database.db')
-cur = conn.cursor()
+    except Exception as e:
+        print(f"Error creating histogram: {str(e)}")
 
-popularity_scores_data = get_popularity_scores(cur)
+create_histogram(cur, conn)
 
-plot_popularity_histogram(popularity_scores_data)
-
-conn.close()
 
 
