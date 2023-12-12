@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import requests
+
 
 def create_histogram(cur, conn):
     try:
@@ -16,13 +18,14 @@ def create_histogram(cur, conn):
         bin_edges = np.arange(min(song_ids), max(song_ids) + 1, 1)
 
         fig, ax = plt.subplots(figsize=(12, 6))
-        rects1 = ax.hist(song_ids, bins=bin_edges - 0.175, weights=avg_popularity, width=0.35, label='Average Popularity', color='skyblue')
-        rects2 = ax.hist(song_ids, bins=bin_edges + 0.175, weights=song_occurences, width=0.35, label='Song Occurrences', color='red')
 
-        ax.set_xlabel('Song ID Range')
-        ax.set_ylabel('Scores')
+        ax.barh(bin_edges - 0.175, avg_popularity, height=0.35, label='Average Popularity', color='skyblue')
+        ax.barh(bin_edges + 0.175, song_occurences, height=0.35, label='Song Occurrences', color='red')
+
+        ax.set_ylabel('Song ID Range')
+        ax.set_xlabel('Scores')
         ax.set_title('Average Popularity and Song Occurrences for Each Song')
-        ax.set_xticks(bin_edges)
+        ax.set_yticks(bin_edges)
         ax.legend()
 
         plt.show()
@@ -31,3 +34,4 @@ def create_histogram(cur, conn):
         print(f"Error creating histogram: {str(e)}")
 
 create_histogram(cur, conn)
+
