@@ -34,7 +34,7 @@ def visualize_song_and_popularity(calculation):
     plt.scatter(calculation[0], calculation[1], c='blue', label='Scatterplot of Popularity')
     plt.title('Popularity and Setlists')
     plt.xlabel('Song Popularity Score')
-    plt.ylabel('Occurences on Setlists')
+    plt.ylabel('Occurences on Setlist')
     plt.legend()
 
     plt.tight_layout()

@@ -13,18 +13,16 @@ def create_histogram(cur, conn):
 
         song_ids, avg_popularity, song_occurences = zip(*data)
 
-        width = 0.35  
-        ind = np.arange(len(song_ids))  # the label locations
+        bin_edges = np.arange(min(song_ids), max(song_ids) + 1, 1)
 
         fig, ax = plt.subplots(figsize=(12, 6))
-        rects1 = ax.bar(ind - width/2, avg_popularity, width, label='Average Popularity', color='skyblue')
-        rects2 = ax.bar(ind + width/2, song_occurences, width, label='Song Occurrences', color='orange')
+        rects1 = ax.hist(song_ids, bins=bin_edges - 0.175, weights=avg_popularity, width=0.35, label='Average Popularity', color='skyblue')
+        rects2 = ax.hist(song_ids, bins=bin_edges + 0.175, weights=song_occurences, width=0.35, label='Song Occurrences', color='orange')
 
-        ax.set_xlabel('Song ID')
+        ax.set_xlabel('Song ID Range')
         ax.set_ylabel('Scores')
         ax.set_title('Average Popularity and Song Occurrences for Each Song')
-        ax.set_xticks(ind)
-        ax.set_xticklabels(song_ids)
+        ax.set_xticks(bin_edges)
         ax.legend()
 
         plt.show()
