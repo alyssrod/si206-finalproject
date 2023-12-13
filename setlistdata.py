@@ -1,4 +1,4 @@
-import spotipy
+mport spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
 import sqlite3
@@ -72,7 +72,7 @@ def store_setlists_for_artists(data,track_list,cur,conn):
 
 def store_tours_for_artists(data,cur,conn):
     limiter=0
-    cur.execute("CREATE TABLE IF NOT EXISTS setlist_data (artist_id INTEGER, date TEXT, venue TEXT)")
+    cur.execute("CREATE TABLE IF NOT EXISTS setlist_data (artist_id INTEGER, date TEXT, venue_id INTEGER)")
     for item in data:
         if limiter > 10:
             break
@@ -85,7 +85,11 @@ def store_tours_for_artists(data,cur,conn):
                 artist_id=artist_id[0]
                 date=item["eventDate"]
                 venue=item["venue"]["name"]
-                cur.execute("INSERT INTO setlist_data (artist_id,date,venue) VALUES (?, ?,?)", (artist_id,date,venue))
+                query="SELECT id FROM venue_ids WHERE venue_name= ?" 
+                cur.execute(query, (venue,))
+                venue_id=cur.fetchone()
+                venue_id=venue_id[0]
+                cur.execute("INSERT INTO setlist_data (artist_id,date,venue_id) VALUES (?, ?,?)", (artist_id,date,venue_id))
                 limiter+=1
             except:
                 continue
